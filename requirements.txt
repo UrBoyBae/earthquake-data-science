@@ -1,7 +1,6 @@
-List Library :
-1. pandas
-2. os
-3. requests
-4. streamlit
-5. pathlib
-6. matplotlib
+pandas
+os
+requests
+streamlit
+pathlib
+matplotlib
