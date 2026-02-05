@@ -10,7 +10,10 @@ from streamlit_folium import st_folium
 st.title("Visualisasi Potensi Tsunami")
 
 # File CSV
-CSV_FILE = "earthquake_1201_cleaned_final.csv"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+CSV_FILE = os.path.join(BASE_DIR, "..", "data", "clean", "earthquake_1201_cleaned_final.csv")
+
 
 if not os.path.exists(CSV_FILE):
     st.error(f"File tidak ditemukan: {CSV_FILE}")
