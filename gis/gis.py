@@ -43,7 +43,11 @@ for c in num_cols:
     )
     df[c] = pd.to_numeric(df[c], errors="coerce")
 
-df["tsunami"] = df["tsunami"].fillna(0).astype(int)
+df["tsunami"] = (
+    pd.to_numeric(df["tsunami"], errors="coerce")
+    .fillna(0)
+    .astype(int)
+)
 
 # FEATURE ENGINEERING
 df["depth_km"] = df["depth"]
