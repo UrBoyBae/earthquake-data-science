@@ -1,0 +1,184 @@
+import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+import csv
+import folium
+from streamlit_folium import st_folium
+
+st.title("Visualisasi Potensi Tsunami")
+
+# File CSV
+CSV_FILE = "earthquake_1201_cleaned_final.csv"
+
+if not os.path.exists(CSV_FILE):
+    st.error(f"File tidak ditemukan: {CSV_FILE}")
+    st.stop()
+
+# Read CSV
+try:
+    df = pd.read_csv(
+        CSV_FILE,
+        sep=";",
+        decimal=",",
+        encoding="utf-8-sig",
+        engine="python",
+        on_bad_lines="skip",
+        quoting=csv.QUOTE_MINIMAL
+    )
+    st.success("File berhasil dibaca")
+except Exception as e:
+    st.error(f"Gagal membaca file: {e}")
+    st.stop()
+
+
+# Folium Map
+m = folium.Map(
+    location=[-2.5, 118],
+    zoom_start=5,
+    tiles="OpenStreetMap"
+)
+
+
+# Normalisasi Data Tsunami
+df["tsunami_potential"] = (
+    df["tsunami_potential"]
+    .astype(str)
+    .str.strip()
+    .str.lower()
+)
+
+# Preview Data
+st.subheader("Preview Data")
+df_preview = df.drop(columns=['place'], errors='ignore')
+st.dataframe(df_preview.head())
+
+# Status Tsunami
+st.subheader("Status Tsunami")
+
+if "tsunami_potential" not in df.columns:
+    st.error("Kolom 'tsunami_potential' tidak ditemukan")
+    st.stop()
+
+# Kita bagi jadi 2 kolom: kolom kiri untuk tabel (lebar kecil), kolom kanan dikosongkan
+col_tabel, col_kosong = st.columns([1, 2]) 
+
+with col_tabel:
+    # Menghitung data
+    tsunami_count = df["tsunami_potential"].value_counts().reset_index()
+    tsunami_count.columns = ['Status', 'Jumlah']
+    
+    # Menampilkan tabel di kolom yang sempit supaya angka & teks berdekatan
+    st.dataframe(tsunami_count, hide_index=True, use_container_width=True)
+
+# Definisikan variabel untuk grafik agar tidak error
+status = tsunami_count['Status'].astype(str)
+jumlah = tsunami_count['Jumlah'].values
+
+# Visualisasi
+st.subheader("Grafik Potensi Tsunami")
+
+# Warna Bar + Peta
+warna_bar = []
+for s in status:
+    if s.lower() == "berpotensi":
+        warna_bar.append("#ef240e")   
+    else:
+        warna_bar.append("#00ac48")   
+
+fig, ax = plt.subplots(figsize=(6, 4))
+
+bars = ax.bar(status, jumlah, color=warna_bar)
+
+# kasih angka di atas bar
+for bar in bars:
+    height = bar.get_height()
+    ax.text(
+        bar.get_x() + bar.get_width() / 2,
+        height,
+        str(int(height)),
+        ha='center',
+        va='bottom',
+        fontsize=10
+    )
+
+ax.set_xlabel("Status Tsunami")
+ax.set_ylabel("Jumlah Kejadian")
+ax.set_title("Distribusi Potensi Tsunami")
+
+st.pyplot(fig)
+
+# Peta Potensi Tsunami
+st.subheader("Peta Status Potensi Tsunami")
+def warna_tsunami(val):
+    if val in ["berpotensi", "1", "yes", "true"]:
+        return "#ed160a"
+    else:
+        return "#2DDA23"
+
+# pastikan latitude & longitude angka
+df["latitude"] = pd.to_numeric(df["latitude"], errors="coerce")
+df["longitude"] = pd.to_numeric(df["longitude"], errors="coerce")
+
+# buang data kosong
+df_map = df.dropna(subset=["latitude", "longitude", "tsunami_potential"])
+
+# titik tengah peta
+map_center = [
+    df_map["latitude"].mean(),
+    df_map["longitude"].mean()
+]
+
+# buat peta
+m = folium.Map(location=map_center, zoom_start=5)
+
+# warna berdasarkan status tsunami
+for _, row in df_map.iterrows():
+    status = str(row["tsunami_potential"]).lower()
+
+    if status == "berpotensi":
+        warna = "#ef240e"   
+    else:
+        warna = "#00ac48"
+
+
+    folium.CircleMarker(
+        location=[row["latitude"], row["longitude"]],
+        radius=5,                 
+        color=None,               
+        fill=True,
+        fill_color=warna,
+        fill_opacity=0.7,         
+        popup=f"Status Tsunami: {row['tsunami_potential']}"
+    ).add_to(m)
+
+
+# legend (menampilkann keterangan)
+from branca.element import Template, MacroElement
+
+legend_html = """
+{% macro html(this, kwargs) %}
+<div style="
+    position: fixed;
+    bottom: 50px;
+    left: 50px;
+    width: 170px;
+    background-color: white;
+    border:2px solid grey;
+    z-index:9999;
+    font-size:14px;
+    padding:10px;
+">
+<b>Status Tsunami</b><br>
+<span style="color:#ef240e;">●</span> Berpotensi<br>
+<span style="color:#00ac48;">●</span> Tidak Berpotensi
+</div>
+{% endmacro %}
+"""
+legend = MacroElement()
+legend._template = Template(legend_html)
+m.get_root().add_child(legend)
+
+
+st_folium(m, width=800, height=500)
