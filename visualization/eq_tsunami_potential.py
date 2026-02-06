@@ -156,32 +156,13 @@ for _, row in df_map.iterrows():
         popup=f"Status Tsunami: {row['tsunami']}"
     ).add_to(m)
 
-
-# legend (menampilkann keterangan)
-from branca.element import Template, MacroElement
-
-legend_html = """
-{% macro html(this, kwargs) %}
-<div style="
-    position: fixed;
-    bottom: 50px;
-    left: 50px;
-    width: 170px;
-    background-color: white;
-    border:2px solid grey;
-    z-index:9999;
-    font-size:14px;
-    padding:10px;
-">
-<b>Status Tsunami</b><br>
-<span style="color:#ef240e;">●</span> Berpotensi<br>
-<span style="color:#00ac48;">●</span> Tidak Berpotensi
-</div>
-{% endmacro %}
-"""
-legend = MacroElement()
-legend._template = Template(legend_html)
-m.get_root().add_child(legend)
-
-
 st_folium(m, width=800, height=500)
+
+#Keterangan
+st.markdown("**Keterangan:**")
+st.markdown(
+        """
+        - 🔴 *Berpotensi*
+        - 🟢 *Tidak Berpotensi*
+        """
+    )
