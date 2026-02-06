@@ -43,7 +43,7 @@ else:
     
     
     regions = df[kolom_region].unique()
-    st.write("**Region yang Tersedia:**")  
+    st.write("**Region yang Tersedia**")  
     
     selected_region = st.selectbox("Pilih Region:", regions)
     
@@ -60,9 +60,6 @@ else:
     if df_region.empty:
         st.warning(f"Tidak ada data untuk region: {selected_region}")
     else:
-        # Cek tipe data magnitude
-        st.write(f"**Tipe Data Magnitude:** {df_region[kolom_magnitude].dtype}")
-        st.write(f"**Sample Magnitude:** {df_region[kolom_magnitude].head().tolist()}")
         
         # Histogram
         try:
