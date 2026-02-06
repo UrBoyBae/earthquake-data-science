@@ -30,7 +30,7 @@ try:
         on_bad_lines="skip",
         quoting=csv.QUOTE_MINIMAL
     )
-    st.success("File berhasil dibaca")
+    # st.success("File berhasil dibaca")
 except Exception as e:
     st.error(f"Gagal membaca file: {e}")
     st.stop()
@@ -45,8 +45,8 @@ m = folium.Map(
 
 
 # Normalisasi Data Tsunami
-df["tsunami_potential"] = (
-    df["tsunami_potential"]
+df["tsunami"] = (
+    df["tsunami"]
     .astype(str)
     .str.strip()
     .str.lower()
@@ -60,8 +60,8 @@ st.dataframe(df_preview.head())
 # Status Tsunami
 st.subheader("Status Tsunami")
 
-if "tsunami_potential" not in df.columns:
-    st.error("Kolom 'tsunami_potential' tidak ditemukan")
+if "tsunami" not in df.columns:
+    st.error("Kolom 'tsunami' tidak ditemukan")
     st.stop()
 
 # Kita bagi jadi 2 kolom: kolom kiri untuk tabel (lebar kecil), kolom kanan dikosongkan
@@ -69,7 +69,7 @@ col_tabel, col_kosong = st.columns([1, 2])
 
 with col_tabel:
     # Menghitung data
-    tsunami_count = df["tsunami_potential"].value_counts().reset_index()
+    tsunami_count = df["tsunami"].value_counts().reset_index()
     tsunami_count.columns = ['Status', 'Jumlah']
     
     # Menampilkan tabel di kolom yang sempit supaya angka & teks berdekatan
@@ -85,7 +85,7 @@ st.subheader("Grafik Potensi Tsunami")
 # Warna Bar + Peta
 warna_bar = []
 for s in status:
-    if s.lower() == "berpotensi":
+    if s.lower() == "ya":
         warna_bar.append("#ef240e")   
     else:
         warna_bar.append("#00ac48")   
@@ -115,7 +115,7 @@ st.pyplot(fig)
 # Peta Potensi Tsunami
 st.subheader("Peta Status Potensi Tsunami")
 def warna_tsunami(val):
-    if val in ["berpotensi", "1", "yes", "true"]:
+    if val in ["ya", "1", "yes", "true"]:
         return "#ed160a"
     else:
         return "#2DDA23"
@@ -125,7 +125,7 @@ df["latitude"] = pd.to_numeric(df["latitude"], errors="coerce")
 df["longitude"] = pd.to_numeric(df["longitude"], errors="coerce")
 
 # buang data kosong
-df_map = df.dropna(subset=["latitude", "longitude", "tsunami_potential"])
+df_map = df.dropna(subset=["latitude", "longitude", "tsunami"])
 
 # titik tengah peta
 map_center = [
@@ -138,9 +138,9 @@ m = folium.Map(location=map_center, zoom_start=5)
 
 # warna berdasarkan status tsunami
 for _, row in df_map.iterrows():
-    status = str(row["tsunami_potential"]).lower()
+    status = str(row["tsunami"]).lower()
 
-    if status == "berpotensi":
+    if status == "ya":
         warna = "#ef240e"   
     else:
         warna = "#00ac48"
@@ -153,7 +153,7 @@ for _, row in df_map.iterrows():
         fill=True,
         fill_color=warna,
         fill_opacity=0.7,         
-        popup=f"Status Tsunami: {row['tsunami_potential']}"
+        popup=f"Status Tsunami: {row['tsunami']}"
     ).add_to(m)
 
 

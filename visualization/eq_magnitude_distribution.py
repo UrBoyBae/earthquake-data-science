@@ -29,7 +29,7 @@ st.dataframe(df_preview.head())
 
 # Ganti nama kolom
 kolom_magnitude = "magnitude" 
-kolom_region = "place"         
+kolom_region = "country"         
 
 if kolom_magnitude not in df.columns or kolom_region not in df.columns:
     st.error(f"Kolom '{kolom_magnitude}' atau '{kolom_region}' tidak ditemukan.")
