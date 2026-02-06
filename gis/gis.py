@@ -44,7 +44,15 @@ for c in num_cols:
     df[c] = pd.to_numeric(df[c], errors="coerce")
 
 df["tsunami"] = (
-    pd.to_numeric(df["tsunami"], errors="coerce")
+    df["tsunami"]
+    .replace({
+        "Ya": 1,
+        "Tidak": 0,
+        "YES": 1,
+        "NO": 0,
+        True: 1,
+        False: 0
+    })
     .fillna(0)
     .astype(int)
 )
@@ -114,7 +122,7 @@ countries = sorted(
 col_left, _ = st.columns([3, 9])
 with col_left:
     selected_country = st.selectbox(
-        "",
+        "Pilih Negara",
         countries,
         label_visibility="collapsed"
     )
@@ -222,4 +230,4 @@ with tab2:
 with tab3:
 
     st.subheader("📋 Tabel Data Lengkap")
-    st.dataframe(df, use_container_width=True)
+    st.dataframe(df, width="stretch")
