@@ -13,15 +13,7 @@ def load_data():
     df = pd.read_csv(CSV_FILE, sep=';')
 
     # Ubah ke numerik agar tidak error perbandingan
-    df["depth_km"] = pd.to_numeric(df["depth_km"], errors="coerce")
     df["sig"] = pd.to_numeric(df["sig"], errors="coerce")
-
-    # Kategori kedalaman
-    df["depth_category"] = df["depth_km"].apply(
-        lambda x: "Dangkal" if pd.notna(x) and x < 70 
-        else "Menengah" if pd.notna(x) and x < 300 
-        else "Dalam"
-    )
 
     # Kategori signifikansi
     df["sig_category"] = df["sig"].apply(
@@ -62,7 +54,7 @@ with col2:
 # ================= VISUALISASI =================
 def plot_kedalaman_gempa(region_list=None, min_events=0):
 
-    df_filtered = df[df['depth_category'].isin(['Dangkal', 'Dalam'])]
+    df_filtered = df[df['depth_category'].isin(['Dangkal', 'Menengah', 'Dalam'])]
 
     if region_list:
         df_filtered = df_filtered[df_filtered['country'].isin(region_list)]
@@ -81,7 +73,7 @@ def plot_kedalaman_gempa(region_list=None, min_events=0):
         st.warning("Tidak ada negara yang memenuhi minimal jumlah kejadian.")
         return
 
-    ct_all_pct = ct_all.reindex(columns=['Dangkal', 'Dalam'], fill_value=0)
+    ct_all_pct = ct_all.reindex(columns=['Dangkal', 'Menengah', 'Dalam'], fill_value=0)
     ct_all_pct = ct_all_pct.div(ct_all['Total'], axis=0) * 100
     ct_all_pct = ct_all_pct.sort_values(by='Dangkal', ascending=False)
 
@@ -89,7 +81,7 @@ def plot_kedalaman_gempa(region_list=None, min_events=0):
     plt.style.use('seaborn-v0_8-whitegrid')
     fig, ax = plt.subplots(figsize=(14, 8))
 
-    ct_all_pct.plot(kind='bar', ax=ax, color=['#2E86C1', '#C0392B'], edgecolor='white')
+    ct_all_pct.plot(kind='bar', ax=ax, color=['#2E86C1', '#F1C40F', '#C0392B'], edgecolor='white')
     ax.set_title('Perbandingan Karakteristik Kedalaman Gempa per Negara', fontsize=14, fontweight='bold')
     ax.set_ylabel('Proporsi (%)')
 
