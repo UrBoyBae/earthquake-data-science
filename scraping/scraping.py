@@ -9,7 +9,7 @@ params = {
     "starttime": "2024-01-01",
     "endtime": "2025-12-31",
     "minmagnitude": 4,
-    "limit": 1201,
+    "limit": 5000,
     "orderby": "time"
 }
 
